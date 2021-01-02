@@ -1,6 +1,6 @@
 <?php
 session_start();
-header( "refresh:30;url=sessionExpired.php" );
+header( "refresh:33;url=sessionExpired.php" );
 
 // Verify the user has access to the page
 include('db.php');
@@ -11,11 +11,14 @@ include('db.php');
     $authUser = $value;
 include('closedb.php');
 
+if (!($_SESSION['currentUserName'])) {
+    $_SESSION['currentUserName'] = "Guest";
+}
 if ($authUser == $_SESSION['currentUserName']) {
-    echo('u have access');
+    // Load the player
     include('player.php');
 }
 else {
-    header( "refresh:0.01;url=index.php" );
+    header( "refresh:1;url=index.php" );
 }
 ?>

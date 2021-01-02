@@ -3,7 +3,7 @@
 session_start();
 
 $_SESSION['currentUserName'] = $_GET["var"];
-echo $_SESSION['currentUserName'];
+$_SESSION['currentName'] = $_GET["name"];
 
 $url1=$_SERVER['REQUEST_URI'];
 header("Refresh: 5; URL=$url1");
@@ -20,7 +20,7 @@ include('db.php');
         // Insert the user
         include('db.php');
         $currentTimeinSeconds = time();  
-        $sql = "INSERT INTO `Queue` (`Username`, `TimeAdded`) VALUES ('".$_SESSION['currentUserName']."', '".$currentTimeinSeconds."');";
+        $sql = "INSERT INTO `Queue` (`Username`, `TimeAdded`, `Name`) VALUES ('".$_SESSION['currentUserName']."', '".$currentTimeinSeconds."', '".$_SESSION['currentName']."');";
         $result = $mysqli->query($sql);
         include('closedb.php');
     }
@@ -28,6 +28,37 @@ include('db.php');
         // The user is already in the queue
         echo '<br> You are already in the queue.';
     }
+
+include('db.php');
+    $sql = "SELECT `Name` FROM `NowPlaying` ORDER BY `NowPlaying`.`TimeAdded` ASC LIMIT 1";
+    $result = $mysqli->query($sql);
+    $row = $result->fetch_row();
+    $value = $row[0] ?? false;
+    $firstInQueue = $value;
+include('closedb.php');
+
+echo "<br> Now Playing: ". $value . ".";
+
+echo "<br><br>Queue: <br>";
+
+include('db.php');
+$sql = "SELECT `Name` FROM `Queue`";
+$result = $mysqli->query($sql);
+//$row = $result->fetch_row();
+//$value = $row[0] ?? false;
+echo "<br>";
+echo "<table border='1'>";
+while ($row = mysqli_fetch_assoc($result)) { // Important line !!! Check summary get row on array ..
+    echo "<tr>";
+    foreach ($row as $field => $value) { // I you want you can right this line like this: foreach($row as $value) {
+        echo "<td>" . $value . "</td>"; // I just did not use "htmlspecialchars()" function. 
+    }
+    echo "</tr>";
+}
+echo "</table>";
+
+include('closedb.php');
+
 
 // Check who is currently first in queue
 include('db.php');
@@ -47,10 +78,31 @@ include('db.php');
     $isPersonPlaying = $value;
 include('closedb.php');
 
+
+
+// Make sure no-one has exited
+
+//Get time added
+include('db.php');
+    $sql = "SELECT `TimeAdded` FROM `NowPlaying` ORDER BY `NowPlaying`.`TimeAdded` ASC LIMIT 1";
+    $result = $mysqli->query($sql);
+    $row = $result->fetch_row();
+    $value = $row[0] ?? false;
+    $authUserTime = $value;
+include('closedb.php');
+$currentTime = time();
+
+if (($currentTime - $authUserTime) > 40){
+    // Remove user from now playing
+    include('db.php'); 
+    $sql = "TRUNCATE TABLE NowPlaying";
+    $result = $mysqli->query($sql);
+    include('closedb.php');
+}
+
 if (($firstInQueue == $_SESSION['currentUserName']) && ($isPersonPlaying == false) ){
     // Notify the user
     echo "<br> You are <b>first</b> in queue. Redirecting you now.";
-    sleep(2); // wait 2 secs
 
     // Remove the user from the queue
     include('db.php'); 
@@ -61,17 +113,18 @@ if (($firstInQueue == $_SESSION['currentUserName']) && ($isPersonPlaying == fals
     // Add the user to the 'nowplaying' db
     include('db.php');
     $currentTimeinSeconds = time();  
-    $sql = "INSERT INTO `NowPlaying` (`Username`, `TimeAdded`) VALUES ('".$_SESSION['currentUserName']."', '".$currentTimeinSeconds."');";
+    $sql = "INSERT INTO `NowPlaying` (`Username`, `TimeAdded`, `Name`) VALUES ('".$_SESSION['currentUserName']."', '".$currentTimeinSeconds."', '".$_SESSION['currentName']."');";
     $result = $mysqli->query($sql);
     include('closedb.php');
 
-    echo('redirecting');
+    echo('<br> Please wait while we redirect you......');
     // Redirect user
-    header("Location: playing.php");
-    die();
+    
+    header( "refresh:5;url=playing.php");
 }
 else{
-    echo "<br> it wont be too long";
+    echo "<br> You are in the Queue! Feel free to watch the livestream while you wait: <br>";
+    include('stream.php');
 }
 
 

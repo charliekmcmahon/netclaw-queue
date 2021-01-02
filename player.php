@@ -14,13 +14,29 @@
     <div class="title">
     <h1>NetClaw - Play a claw machine for free over the internet!</h1>
     <p>
-<img src="netclawlogo.png" width="200" height="50">
+    <br><div id="some_div"></div>
+    <script>
+        var timeLeft = 30;
+        var elem = document.getElementById('some_div');
+        var timerId = setInterval(countdown, 1000);
+
+        function countdown() {
+            if (timeLeft == -1) {
+                clearTimeout(timerId);
+                doSomething();
+            } else {
+                elem.innerHTML = timeLeft + ' seconds remaining';
+                timeLeft--;
+            }
+        }
+
+        function doSomething() {
+            console.log('redirecting');
+        }
+    </script>
+    <br>
     <p>
-    <script>var _uox = _uox || {};(function() {var s=document.createElement("script");
-s.src="https://static.usuarios-online.com/uo2.min.js";document.getElementsByTagName("head")[0].appendChild(s);})();</script>
-<a href="https://www.usuarios-online.com/en/" data-id="a0334b99c9031699a086c91692df0ef4" data-type="default" target="_blank" id="uox_link">users online</a>
     <p>
-    <h2>Queue coming soon!</h2>
     </div>
     <div class="set">
 
